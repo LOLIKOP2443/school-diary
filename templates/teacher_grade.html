@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Выставить оценку{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Выставить оценку</h1>
+    <a href="{{ url_for('teacher_journal') }}" class="btn">← Назад</a>
+</div>
+
+<div class="card form-card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="student_id">Ученик</label>
+            <select id="student_id" name="student_id" required>
+                <option value="">— Выберите ученика —</option>
+                {% for student in students %}
+                    <option value="{{ student.id }}">
+                        {{ student.class_name }} — {{ student.full_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="subject_id">Предмет</label>
+            <select id="subject_id" name="subject_id" required>
+                <option value="">— Выберите предмет —</option>
+                {% for subject in subjects %}
+                    <option value="{{ subject.id }}">{{ subject.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Оценка</label>
+            <div class="grade-selector">
+                {% for val in [5, 4, 3, 2] %}
+                    <label class="grade-option grade-{{ val }}">
+                        <input type="radio" name="value" value="{{ val }}" required>
+                        <span>{{ val }}</span>
+                    </label>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="comment">Комментарий (необязательно)</label>
+            <input type="text" id="comment" name="comment" placeholder="Например: Контрольная работа" maxlength="200">
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-full">Выставить оценку</button>
+    </form>
+</div>
+{% endblock %}

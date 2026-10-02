@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Домашние задания{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📝 Домашние задания</h1>
+    <a href="{{ url_for('homework_add') }}" class="btn btn-primary">➕ Добавить задание</a>
+</div>
+
+<div class="card">
+    <form method="GET" action="{{ url_for('homework_list') }}" class="filter-form">
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="class_name">Класс</label>
+                <select id="class_name" name="class_name" onchange="this.form.submit()">
+                    {% for c in classes %}
+                        <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if selected_class %}
+    {% if homeworks %}
+        <div class="homework-grid">
+            {% for hw in homeworks %}
+                <div class="homework-card">
+                    <div class="homework-card-header">
+                        <div class="homework-card-date">
+                            <span class="hw-day">{{ ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][hw.date.weekday()] }}</span>
+                            <span class="hw-date-full">{{ hw.date.strftime('%d.%m.%Y') }}</span>
+                        </div>
+                        <div class="homework-card-actions">
+                            <a href="{{ url_for('homework_edit', hw_id=hw.id) }}" class="btn-icon" title="Редактировать">✏️</a>
+                            <form method="POST" action="{{ url_for('homework_delete', hw_id=hw.id) }}"
+                                  style="display: inline;"
+                                  onsubmit="return confirm('Удалить задание?');">
+                                <button type="submit" class="btn-icon btn-icon-danger" title="Удалить">🗑️</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="homework-card-subject">{{ hw.subject.name }}</div>
+
+                    <div class="homework-card-text">{{ hw.text }}</div>
+
+                    {% if hw.teacher %}
+                        <div class="homework-card-footer">
+                            👤 {{ hw.teacher.full_name }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state" style="margin-top: 20px;">
+            <p>📭 Для класса {{ selected_class }} пока нет домашних заданий</p>
+            <a href="{{ url_for('homework_add') }}" class="btn btn-primary" style="margin-top: 16px;">➕ Добавить первое задание</a>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="empty-state" style="margin-top: 20px;">
+        <p>Нет доступных классов. Сначала добавьте учеников в админ-панели.</p>
+    </div>
+{% endif %}
+{% endblock %}

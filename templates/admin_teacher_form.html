@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Редактировать учителя' if teacher else 'Добавить учителя' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ '✏️ Редактировать учителя' if teacher else '➕ Добавить учителя' }}</h1>
+    <a href="{{ url_for('admin_panel') }}" class="btn">← Назад</a>
+</div>
+
+<div class="card form-card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="full_name">ФИО учителя</label>
+            <input type="text" id="full_name" name="full_name" required
+                   value="{{ teacher.full_name if teacher else '' }}"
+                   placeholder="Например: Смирнова Ольга Ивановна">
+        </div>
+
+        {% if not teacher %}
+        <div class="form-group">
+            <label for="username">Логин</label>
+            <input type="text" id="username" name="username" required
+                   placeholder="Например: smirnova"
+                   pattern="[a-zA-Z0-9_]+">
+            <small class="form-hint">Только латиница, цифры и подчёркивание</small>
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label>Логин</label>
+            <input type="text" value="{{ teacher.username }}" disabled>
+            <small class="form-hint">Логин нельзя изменить</small>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="password">
+                {% if teacher %}Новый пароль (оставьте пустым, чтобы не менять){% else %}Пароль{% endif %}
+            </label>
+            <input type="text" id="password" name="password"
+                   {% if not teacher %}required{% endif %}
+                   placeholder="Например: teacher2025">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+            {{ '💾 Сохранить' if teacher else '➕ Добавить учителя' }}
+        </button>
+    </form>
+</div>
+{% endblock %}

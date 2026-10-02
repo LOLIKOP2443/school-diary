@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Школьный дневник{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% if session.user_id %}
+    <header class="header">
+        <div class="container header-inner">
+            <div class="logo">
+                <a href="{{ url_for('index') }}">📚 Школьный дневник</a>
+            </div>
+
+            <nav class="main-nav">
+                {% if session.role == 'student' %}
+                    <a href="{{ url_for('student_diary') }}"
+                       class="nav-link {% if request.endpoint == 'student_diary' %}active{% endif %}">
+                        📖 Дневник
+                    </a>
+                    <a href="{{ url_for('schedule') }}"
+                       class="nav-link {% if request.endpoint == 'schedule' %}active{% endif %}">
+                        📅 Расписание
+                    </a>
+                    <a href="{{ url_for('my_report') }}"
+                       class="nav-link {% if request.endpoint == 'my_report' %}active{% endif %}">
+                        📊 Мои итоги
+                    </a>
+                {% elif session.role == 'teacher' %}
+                    <a href="{{ url_for('teacher_journal') }}"
+                       class="nav-link {% if request.endpoint == 'teacher_journal' %}active{% endif %}">
+                        📓 Журнал
+                    </a>
+                    <a href="{{ url_for('schedule') }}"
+                       class="nav-link {% if request.endpoint == 'schedule' %}active{% endif %}">
+                        📅 Расписание
+                    </a>
+                    <a href="{{ url_for('attendance') }}"
+                       class="nav-link {% if request.endpoint == 'attendance' %}active{% endif %}">
+                        📋 Посещаемость
+                    </a>
+                    <a href="{{ url_for('homework_list') }}"
+                       class="nav-link {% if request.endpoint and 'homework' in request.endpoint %}active{% endif %}">
+                        📝 Домашние задания
+                    </a>
+                    <a href="{{ url_for('report') }}"
+                       class="nav-link {% if request.endpoint == 'report' %}active{% endif %}">
+                        📊 Отчёты
+                    </a>
+                {% elif session.role == 'admin' %}
+                    <a href="{{ url_for('admin_panel') }}"
+                       class="nav-link {% if request.endpoint == 'admin_panel' %}active{% endif %}">
+                        🛠️ Админ-панель
+                    </a>
+                    <a href="{{ url_for('schedule') }}"
+                       class="nav-link {% if request.endpoint == 'schedule' %}active{% endif %}">
+                        📅 Расписание
+                    </a>
+                    <a href="{{ url_for('report') }}"
+                       class="nav-link {% if request.endpoint == 'report' %}active{% endif %}">
+                        📊 Отчёты
+                    </a>
+                {% endif %}
+            </nav>
+
+            <div class="user-info">
+                <span class="user-name">{{ session.full_name }}</span>
+                <span class="badge">
+                    {% if session.role == 'teacher' %}Учитель
+                    {% elif session.role == 'admin' %}Админ
+                    {% else %}Ученик{% endif %}
+                </span>
+                <a href="{{ url_for('logout') }}" class="btn-logout">Выйти</a>
+            </div>
+        </div>
+    </header>
+    {% endif %}
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

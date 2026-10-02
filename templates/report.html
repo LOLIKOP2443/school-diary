@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Отчёт за четверть{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 Отчёт за четверть</h1>
+    {% if selected_class %}
+        <a href="{{ url_for('report_print', class_name=selected_class, quarter=selected_quarter, year=selected_year) }}"
+           target="_blank" class="btn btn-primary">🖨️ Распечатать</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <form method="GET" action="{{ url_for('report') }}" class="filter-form">
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="class_name">Класс</label>
+                <select id="class_name" name="class_name" onchange="this.form.submit()">
+                    {% for c in classes %}
+                        <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="quarter">Четверть</label>
+                <select id="quarter" name="quarter" onchange="this.form.submit()">
+                    {% for q_num, q_data in quarters.items() %}
+                        <option value="{{ q_num }}" {% if q_num == selected_quarter %}selected{% endif %}>
+                            {{ q_data.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="year">Учебный год</label>
+                <select id="year" name="year" onchange="this.form.submit()">
+                    {% for y in [selected_year - 1, selected_year, selected_year + 1] %}
+                        <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>
+                            {{ y }}/{{ y + 1 }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if selected_class and report_data %}
+    <div class="card" style="margin-top: 20px;">
+        <h2>
+            {{ selected_class }} — {{ quarters[selected_quarter].name }}
+            <span class="muted" style="font-weight: normal; font-size: 14px;">
+                ({{ start_date.strftime('%d.%m.%Y') }} — {{ end_date.strftime('%d.%m.%Y') }})
+            </span>
+        </h2>
+
+        {% if subjects %}
+            <div style="overflow-x: auto;">
+                <table class="report-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Ученик</th>
+                            {% for subject in subjects %}
+                                <th colspan="2" class="report-subject-header">{{ subject.name }}</th>
+                            {% endfor %}
+                            <th colspan="4" class="report-att-header">Пропуски</th>
+                        </tr>
+                        <tr>
+                            {% for subject in subjects %}
+                                <th class="report-sub-col">Ср. балл</th>
+                                <th class="report-sub-col">Итог</th>
+                            {% endfor %}
+                            <th class="att-col">Н</th>
+                            <th class="att-col">О</th>
+                            <th class="att-col">П</th>
+                            <th class="att-col">Б</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report_data %}
+                            <tr>
+                                <td class="student-cell">
+                                    <a href="{{ url_for('report_student', student_id=row.student.id, year=selected_year) }}">
+                                        {{ row.student.full_name }}
+                                    </a>
+                                </td>
+                                {% for subject in subjects %}
+                                    {% set subj_data = row.subjects[subject.id] %}
+                                    <td class="report-cell">
+                                        {% if subj_data.average %}
+                                            <span class="avg-value">{{ subj_data.average }}</span>
+                                            <div class="grades-mini">
+                                                {% for g in subj_data.grades %}
+                                                    <span class="grade-pill grade-{{ g }}">{{ g }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <span class="muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="report-cell final-cell">
+                                        {% if subj_data.final %}
+                                            <span class="final-grade final-{{ subj_data.final }}">{{ subj_data.final }}</span>
+                                        {% else %}
+                                            <span class="muted">—</span>
+                                        {% endif %}
+                                    </td>
+                                {% endfor %}
+                                <td class="att-count att-Н">{{ row.attendance['Н'] or '' }}</td>
+                                <td class="att-count att-О">{{ row.attendance['О'] or '' }}</td>
+                                <td class="att-count att-П">{{ row.attendance['П'] or '' }}</td>
+                                <td class="att-count att-Б">{{ row.attendance['Б'] or '' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="muted">У вас нет предметов для отчёта.</p>
+        {% endif %}
+    </div>
+{% elif selected_class %}
+    <div class="empty-state" style="margin-top: 20px;">
+        <p>В классе {{ selected_class }} пока нет учеников</p>
+    </div>
+{% else %}
+    <div class="empty-state" style="margin-top: 20px;">
+        <p>Нет доступных классов</p>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Редактировать задание' if homework else 'Добавить задание' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ '✏️ Редактировать задание' if homework else '➕ Новое домашнее задание' }}</h1>
+    <a href="{{ url_for('homework_list') }}" class="btn">← Назад</a>
+</div>
+
+<div class="card form-card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="class_name">Класс</label>
+            <select id="class_name" name="class_name" required>
+                <option value="">— Выберите класс —</option>
+                {% for c in classes %}
+                    <option value="{{ c }}"
+                        {% if homework and homework.class_name == c %}selected{% endif %}>
+                        {{ c }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="subject_id">Предмет</label>
+            <select id="subject_id" name="subject_id" required>
+                <option value="">— Выберите предмет —</option>
+                {% for s in subjects %}
+                    <option value="{{ s.id }}"
+                        {% if homework and homework.subject_id == s.id %}selected{% endif %}>
+                        {{ s.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            {% if not subjects %}
+                <small class="form-hint">У вас пока нет предметов. Обратитесь к администратору.</small>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="date">Дата задания (на какой день задано)</label>
+            <input type="date" id="date" name="date" required
+                   value="{{ homework.date.strftime('%Y-%m-%d') if homework else '' }}">
+            <small class="form-hint">Ученики увидят задание в своём дневнике</small>
+        </div>
+
+        <div class="form-group">
+            <label for="text">Текст задания</label>
+            <textarea id="text" name="text" required rows="6"
+                      placeholder="Например: параграф 12, задачи 1-5, подготовить доклад..."
+                      maxlength="2000">{{ homework.text if homework else '' }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+            {{ '💾 Сохранить' if homework else '➕ Добавить задание' }}
+        </button>
+    </form>
+</div>
+{% endblock %}

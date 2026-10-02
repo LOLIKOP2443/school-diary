@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Расписание{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📅 Расписание уроков</h1>
+    <div>
+        {% if role == 'student' %}
+            <span class="badge badge-class">{{ view_class }}</span>
+        {% else %}
+            <form method="GET" action="{{ url_for('schedule') }}" style="display: inline-flex; gap: 8px; align-items: center;">
+                <select name="class_name" onchange="this.form.submit()" style="padding: 8px 12px; border-radius: 8px; border: 2px solid #e5e7eb;">
+                    {% for c in classes %}
+                        <option value="{{ c }}" {% if c == view_class %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+                <a href="{{ url_for('schedule_edit', class_name=view_class) }}" class="btn btn-primary">✏️ Редактировать</a>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+{% if not view_class %}
+    <div class="empty-state">
+        <p>У вас не указан класс. Обратитесь к администратору.</p>
+    </div>
+{% else %}
+    <div class="schedule-wrapper">
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th class="schedule-lesson-col">Урок</th>
+                    {% for day in range(1, 6) %}
+                        <th>{{ day_names[day] }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for lesson in range(1, max_lesson + 1) %}
+                    <tr>
+                        <td class="schedule-lesson-num">
+                            <strong>{{ lesson }}</strong>
+                        </td>
+                        {% for day in range(1, 6) %}
+                            {% set item = schedule_data.get((day, lesson)) %}
+                            <td class="schedule-cell">
+                                {% if item %}
+                                    <div class="schedule-item">
+                                        {% if item.time_start and item.time_end %}
+                                            <div class="schedule-time">{{ item.time_start }}–{{ item.time_end }}</div>
+                                        {% endif %}
+                                        <div class="schedule-subject">{{ item.subject.name }}</div>
+                                        {% if item.subject.teacher %}
+                                            <div class="schedule-teacher">{{ item.subject.teacher.full_name }}</div>
+                                        {% endif %}
+                                        {% if item.room %}
+                                            <div class="schedule-room">каб. {{ item.room }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

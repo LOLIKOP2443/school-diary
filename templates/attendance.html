@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Посещаемость{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📋 Отметка посещаемости</h1>
+    <a href="{{ url_for('teacher_journal') }}" class="btn">← В журнал</a>
+</div>
+
+<div class="card">
+    <form method="GET" action="{{ url_for('attendance') }}" class="filter-form">
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="class_name">Класс</label>
+                <select id="class_name" name="class_name" onchange="this.form.submit()">
+                    {% for c in classes %}
+                        <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>
+                            {{ c }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="date">Дата</label>
+                <input type="date" id="date" name="date"
+                       value="{{ selected_date_str }}"
+                       onchange="this.form.submit()">
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if students %}
+    <form method="POST" action="{{ url_for('save_attendance') }}">
+        <input type="hidden" name="class_name" value="{{ selected_class }}">
+        <input type="hidden" name="date" value="{{ selected_date_str }}">
+
+        <div class="card">
+            <h2>Класс {{ selected_class }} — {{ selected_date.strftime('%d.%m.%Y') }}</h2>
+
+            <div class="attendance-legend">
+                <span><b style="color:#dc2626;">Н</b> — прогул</span>
+                <span><b style="color:#f59e0b;">О</b> — опоздал</span>
+                <span><b style="color:#10b981;">П</b> — пропуск по уважительной</span>
+                <span><b style="color:#6b7280;">Б</b> — болел</span>
+            </div>
+
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>Ученик</th>
+                        <th class="mark-col">Н</th>
+                        <th class="mark-col">О</th>
+                        <th class="mark-col">П</th>
+                        <th class="mark-col">Б</th>
+                        <th>Комментарий</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students %}
+                        {% set current = existing.get(student.id) %}
+                        <tr>
+                            <td><strong>{{ student.full_name }}</strong></td>
+                            {% for mark_code in ['Н', 'О', 'П', 'Б'] %}
+                                <td class="mark-cell">
+                                    <label class="mark-radio mark-{{ mark_code }}">
+                                        <input type="radio"
+                                               name="mark_{{ student.id }}"
+                                               value="{{ mark_code }}"
+                                               {% if current and current.mark == mark_code %}checked{% endif %}>
+                                        <span>{{ mark_code }}</span>
+                                    </label>
+                                </td>
+                            {% endfor %}
+                            <td>
+                                <input type="text"
+                                       name="comment_{{ student.id }}"
+                                       value="{{ current.comment if current and current.comment else '' }}"
+                                       placeholder="Например: справка"
+                                       class="comment-input">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">💾 Сохранить</button>
+                <button type="button" class="btn" onclick="clearAll()">Очистить все</button>
+            </div>
+        </div>
+    </form>
+{% else %}
+    <div class="empty-state">
+        <p>В этом классе нет учеников</p>
+    </div>
+{% endif %}
+
+<script>
+function clearAll() {
+    if (confirm('Убрать все отметки на эту дату?')) {
+        document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+        document.querySelectorAll('.comment-input').forEach(c => c.value = '');
+    }
+}
+</script>
+{% endblock %}

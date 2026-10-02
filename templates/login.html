@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Вход в систему{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-icon">🎓</div>
+            <h1>Школьный дневник</h1>
+            <p>Войдите в свой аккаунт</p>
+        </div>
+        
+        <form method="POST" class="login-form">
+            <div class="form-group">
+                <label for="username">Логин</label>
+                <input type="text" id="username" name="username" required autofocus placeholder="Введите логин">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required placeholder="Введите пароль">
+            </div>
+            
+            <button type="submit" class="btn btn-primary btn-full">Войти</button>
+        </form>
+        
+        <div class="login-hint">
+            <p><strong>Демо-доступы:</strong></p>
+            <p>👨‍🎓 Ученик: <code>student</code> / <code>student123</code></p>
+            <p>👩‍🏫 Учитель: <code>teacher</code> / <code>teacher123</code></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

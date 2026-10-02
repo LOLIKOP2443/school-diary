@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Редактирование расписания{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>✏️ Редактирование расписания</h1>
+    <a href="{{ url_for('schedule', class_name=selected_class) }}" class="btn">← К расписанию</a>
+</div>
+
+<div class="card">
+    <form method="GET" action="{{ url_for('schedule_edit') }}" class="filter-form">
+        <div class="filter-row">
+            <div class="form-group">
+                <label for="class_name">Класс</label>
+                <select id="class_name" name="class_name" onchange="this.form.submit()">
+                    {% for c in classes %}
+                        <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if selected_class %}
+    <form method="POST">
+        <input type="hidden" name="class_name" value="{{ selected_class }}">
+
+        <div class="card" style="margin-top: 20px; overflow-x: auto;">
+            <h2>Класс {{ selected_class }}</h2>
+            <p class="muted" style="margin-bottom: 16px;">
+                Заполняйте ячейки: выберите предмет, укажите кабинет и время.
+                Пустые ячейки сохранятся как «нет урока».
+            </p>
+
+            <table class="schedule-edit-table">
+                <thead>
+                    <tr>
+                        <th>Урок</th>
+                        {% for day in range(1, 6) %}
+                            <th>{{ day_names[day] }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lesson in range(1, max_lesson + 1) %}
+                        <tr>
+                            <td class="schedule-lesson-num"><strong>{{ lesson }}</strong></td>
+                            {% for day in range(1, 6) %}
+                                {% set item = existing.get((day, lesson)) %}
+                                <td class="schedule-edit-cell">
+                                    <div class="edit-cell-inner">
+                                        <select name="subject_{{ day }}_{{ lesson }}" class="edit-select">
+                                            <option value="">—</option>
+                                            {% for s in subjects %}
+                                                <option value="{{ s.id }}"
+                                                    {% if item and item.subject_id == s.id %}selected{% endif %}>
+                                                    {{ s.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                        <input type="text"
+                                               name="room_{{ day }}_{{ lesson }}"
+                                               value="{{ item.room if item and item.room else '' }}"
+                                               placeholder="каб."
+                                               class="edit-input"
+                                               maxlength="10">
+                                        <input type="text"
+                                               name="start_{{ day }}_{{ lesson }}"
+                                               value="{{ item.time_start if item and item.time_start else '' }}"
+                                               placeholder="08:30"
+                                               class="edit-input edit-input-small"
+                                               maxlength="5">
+                                        <input type="text"
+                                               name="end_{{ day }}_{{ lesson }}"
+                                               value="{{ item.time_end if item and item.time_end else '' }}"
+                                               placeholder="09:15"
+                                               class="edit-input edit-input-small"
+                                               maxlength="5">
+                                    </div>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">💾 Сохранить расписание</button>
+                <button type="submit"
+                        name="action"
+                        value="clear"
+                        class="btn"
+                        onclick="return confirm('Точно очистить всё расписание для этого класса?');">
+                    🗑️ Очистить всё
+                </button>
+            </div>
+        </div>
+    </form>
+{% else %}
+    <div class="empty-state">
+        <p>Нет доступных классов</p>
+    </div>
+{% endif %}
+{% endblock %}

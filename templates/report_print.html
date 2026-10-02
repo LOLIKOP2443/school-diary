@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Отчёт — {{ selected_class }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Times New Roman', Georgia, serif;
+            background: #f0f2f5;
+            color: #1a1a1a;
+            padding: 20px;
+            font-size: 12px;
+        }
+        .toolbar {
+            max-width: 1100px;
+            margin: 0 auto 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            align-items: center;
+        }
+        .toolbar a, .toolbar button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: -apple-system, sans-serif;
+        }
+        .btn-print {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-back { background: #f3f4f6; color: #1a1a1a; }
+        .report {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px double #1a1a1a;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #666;
+            padding: 6px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        th {
+            background: #f0f0f0;
+            font-weight: 700;
+            font-size: 11px;
+        }
+        td.student-name { text-align: left; font-weight: 600; }
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+        }
+        .signature-block { flex: 1; font-size: 12px; }
+        .signature-line {
+            border-bottom: 1px solid #1a1a1a;
+            height: 30px;
+            margin-bottom: 4px;
+        }
+        .signature-label { font-size: 10px; color: #555; }
+        @media print {
+            body { background: white; padding: 0; }
+            .toolbar { display: none; }
+            .report { box-shadow: none; border-radius: 0; padding: 0; }
+            @page { margin: 1cm; size: A4 landscape; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <button class="btn-print" onclick="window.print()">🖨️ Распечатать / PDF</button>
+    <a href="{{ url_for('report', class_name=selected_class, quarter=selected_quarter, year=selected_year) }}" class="btn-back">← Назад к отчёту</a>
+</div>
+
+<div class="report">
+    <h1>Отчёт успеваемости</h1>
+    <div class="subtitle">
+        {{ selected_class }} класс • {{ quarters[selected_quarter].name }} • {{ selected_year }}/{{ selected_year + 1 }} уч. год
+        <br>
+        ({{ start_date.strftime('%d.%m.%Y') }} — {{ end_date.strftime('%d.%m.%Y') }})
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" style="width: 20%;">Ученик</th>
+                {% for subject in subjects %}
+                    <th colspan="2">{{ subject.name }}</th>
+                {% endfor %}
+                <th colspan="4">Пропуски</th>
+            </tr>
+            <tr>
+                {% for subject in subjects %}
+                    <th>Ср.</th>
+                    <th>Итог</th>
+                {% endfor %}
+                <th>Н</th>
+                <th>О</th>
+                <th>П</th>
+                <th>Б</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in report_data %}
+                <tr>
+                    <td class="student-name">{{ row.student.full_name }}</td>
+                    {% for subject in subjects %}
+                        {% set subj = row.subjects[subject.id] %}
+                        <td>{{ subj.average if subj.average else '—' }}</td>
+                        <td><strong>{{ subj.final if subj.final else '—' }}</strong></td>
+                    {% endfor %}
+                    <td>{{ row.attendance['Н'] or '—' }}</td>
+                    <td>{{ row.attendance['О'] or '—' }}</td>
+                    <td>{{ row.attendance['П'] or '—' }}</td>
+                    <td>{{ row.attendance['Б'] or '—' }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="signatures">
+        <div class="signature-block">
+            <div class="signature-line"></div>
+            <div class="signature-label">Подпись классного руководителя</div>
+        </div>
+        <div class="signature-block">
+            <div class="signature-line"></div>
+            <div class="signature-label">Подпись завуча</div>
+        </div>
+        <div class="signature-block">
+            <div class="signature-line"></div>
+            <div class="signature-label">Дата</div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

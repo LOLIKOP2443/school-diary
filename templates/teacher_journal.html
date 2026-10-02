@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Журнал учителя{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Журнал учителя</h1>
+    <div>
+        <a href="{{ url_for('add_grade') }}" class="btn btn-primary">+ Выставить оценку</a>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ students|length }}</div>
+        <div class="stat-label">Учеников</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ subjects|length }}</div>
+        <div class="stat-label">Моих предметов</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ recent_grades|length }}</div>
+        <div class="stat-label">Последних оценок</div>
+    </div>
+</div>
+
+<div class="two-columns">
+    <div class="card">
+        <h2>👥 Мои ученики</h2>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Класс</th>
+                    <th>ФИО</th>
+                    <th>Логин</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td><span class="badge badge-class">{{ student.class_name }}</span></td>
+                    <td>{{ student.full_name }}</td>
+                    <td><code>{{ student.username }}</code></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>📖 Мои предметы</h2>
+        <ul class="subject-list">
+            {% for subject in subjects %}
+                <li>{{ subject.name }}</li>
+            {% endfor %}
+        </ul>
+
+        <h2 style="margin-top: 24px;">🕐 Последние оценки</h2>
+        <div class="recent-grades">
+            {% for grade in recent_grades %}
+                <div class="recent-grade-item">
+                    <span class="grade-mini grade-{{ grade.value }}">{{ grade.value }}</span>
+                    <div class="recent-info">
+                        <div><strong>{{ grade.student.full_name }}</strong></div>
+                        <div class="recent-meta">{{ grade.subject.name }} • {{ grade.date.strftime('%d.%m.%Y') }}</div>
+                    </div>
+                    <form method="POST" action="{{ url_for('delete_grade', grade_id=grade.id) }}"
+                          onsubmit="return confirm('Удалить оценку?');">
+                        <button type="submit" class="btn-delete">✕</button>
+                    </form>
+                </div>
+            {% else %}
+                <p class="muted">Пока нет оценок</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

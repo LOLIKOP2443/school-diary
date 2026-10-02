@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Админ-панель{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🛠️ Админ-панель</h1>
+</div>
+
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_students }}</div>
+        <div class="stat-label">Учеников</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_teachers }}</div>
+        <div class="stat-label">Учителей</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ total_subjects }}</div>
+        <div class="stat-label">Предметов</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ classes|length }}</div>
+        <div class="stat-label">Классов</div>
+    </div>
+</div>
+
+<div class="admin-nav">
+    <a href="{{ url_for('admin_add_student') }}" class="btn btn-primary">➕ Добавить ученика</a>
+    <a href="{{ url_for('admin_add_teacher') }}" class="btn btn-primary">➕ Добавить учителя</a>
+    <a href="{{ url_for('admin_add_subject') }}" class="btn btn-primary">➕ Добавить предмет</a>
+</div>
+
+<!-- ===== УЧЕНИКИ ===== -->
+<div class="card" style="margin-top: 24px;">
+    <h2>👨‍🎓 Ученики ({{ total_students }})</h2>
+    {% if students %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Класс</th>
+                    <th>ФИО</th>
+                    <th>Логин</th>
+                    <th style="text-align: right;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td><span class="badge badge-class">{{ s.class_name }}</span></td>
+                    <td>{{ s.full_name }}</td>
+                    <td><code>{{ s.username }}</code></td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <a href="{{ url_for('admin_edit_student', student_id=s.id) }}" class="btn-icon" title="Редактировать">✏️</a>
+                        <form method="POST" action="{{ url_for('admin_delete_student', student_id=s.id) }}"
+                              style="display: inline;"
+                              onsubmit="return confirm('Удалить ученика {{ s.full_name }}? Все его оценки и посещаемость тоже удалятся.');">
+                            <button type="submit" class="btn-icon btn-icon-danger" title="Удалить">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="muted">Учеников пока нет</p>
+    {% endif %}
+</div>
+
+<!-- ===== УЧИТЕЛЯ ===== -->
+<div class="card" style="margin-top: 24px;">
+    <h2>👩‍🏫 Учителя ({{ total_teachers }})</h2>
+    {% if teachers %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Логин</th>
+                    <th>Предметы</th>
+                    <th style="text-align: right;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in teachers %}
+                <tr>
+                    <td>{{ t.full_name }}</td>
+                    <td><code>{{ t.username }}</code></td>
+                    <td>
+                        {% set teacher_subjects = subjects|selectattr('teacher_id', 'equalto', t.id)|list %}
+                        {% if teacher_subjects %}
+                            {% for s in teacher_subjects %}
+                                <span class="badge badge-class">{{ s.name }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="muted">нет</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <a href="{{ url_for('admin_edit_teacher', teacher_id=t.id) }}" class="btn-icon" title="Редактировать">✏️</a>
+                        <form method="POST" action="{{ url_for('admin_delete_teacher', teacher_id=t.id) }}"
+                              style="display: inline;"
+                              onsubmit="return confirm('Удалить учителя {{ t.full_name }}?');">
+                            <button type="submit" class="btn-icon btn-icon-danger" title="Удалить">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="muted">Учителей пока нет</p>
+    {% endif %}
+</div>
+
+<!-- ===== ПРЕДМЕТЫ ===== -->
+<div class="card" style="margin-top: 24px;">
+    <h2>📚 Предметы ({{ total_subjects }})</h2>
+    {% if subjects %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Учитель</th>
+                    <th style="text-align: right;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in subjects %}
+                <tr>
+                    <td><strong>{{ s.name }}</strong></td>
+                    <td>
+                        {% if s.teacher %}
+                            {{ s.teacher.full_name }}
+                        {% else %}
+                            <span class="muted">не назначен</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <a href="{{ url_for('admin_edit_subject', subject_id=s.id) }}" class="btn-icon" title="Редактировать">✏️</a>
+                        <form method="POST" action="{{ url_for('admin_delete_subject', subject_id=s.id) }}"
+                              style="display: inline;"
+                              onsubmit="return confirm('Удалить предмет {{ s.name }}?');">
+                            <button type="submit" class="btn-icon btn-icon-danger" title="Удалить">🗑️</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="muted">Предметов пока нет</p>
+    {% endif %}
+</div>
+{% endblock %}

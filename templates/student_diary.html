@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Мой дневник{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Дневник ученика</h1>
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <a href="{{ url_for('print_diary') }}" target="_blank" class="btn btn-primary">🖨️ Распечатать за четверть</a>
+        <div class="student-info">
+            <span>{{ student.full_name }}</span>
+            <span class="badge badge-class">{{ student.class_name }}</span>
+        </div>
+    </div>
+</div>
+
+<div class="stats">
+    <div class="stat-card">
+        <div class="stat-value">{{ total_grades }}</div>
+        <div class="stat-label">Всего оценок</div>
+    </div>
+    <div class="stat-card stat-avg">
+        <div class="stat-value">{{ average }}</div>
+        <div class="stat-label">Средний балл</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value">{{ subjects_data|length }}</div>
+        <div class="stat-label">Предметов</div>
+    </div>
+</div>
+
+{% if homework_list %}
+    <div class="card" style="margin-bottom: 24px;">
+        <h2>📝 Домашние задания на неделю</h2>
+        <div class="homework-list">
+            {% for hw in homework_list %}
+                <div class="homework-item">
+                    <div class="hw-date">
+                        <strong>{{ hw.date.strftime('%d.%m') }}</strong>
+                        <span class="muted">{{ ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][hw.date.weekday()] }}</span>
+                    </div>
+                    <div class="hw-body">
+                        <div class="hw-subject">{{ hw.subject.name }}</div>
+                        <div class="hw-text">{{ hw.text }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}
+
+{% if subjects_data %}
+    <div class="subjects-grid">
+        {% for subject_name, grades_list in subjects_data.items() %}
+            <div class="subject-card">
+                <div class="subject-header">
+                    <h3>{{ subject_name }}</h3>
+                    {% set subj_avg = (grades_list|sum(attribute='value') / grades_list|length)|round(2) %}
+                    <span class="subject-avg">Ср. балл: {{ subj_avg }}</span>
+                </div>
+                <div class="grades-list">
+                    {% for grade in grades_list %}
+                        <div class="grade-item grade-{{ grade.value }}">
+                            <span class="grade-value">{{ grade.value }}</span>
+                            <div class="grade-info">
+                                <span class="grade-date">{{ grade.date.strftime('%d.%m.%Y') }}</span>
+                                {% if grade.comment %}
+                                    <span class="grade-comment">{{ grade.comment }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p>📭 Оценок пока нет</p>
+    </div>
+{% endif %}
+
+<div class="card" style="margin-top: 32px;">
+    <h2>📋 Посещаемость</h2>
+    <div class="attendance-stats">
+        <div class="att-stat att-stat-Н">
+            <div class="att-stat-value">{{ attendance_stats['Н'] }}</div>
+            <div class="att-stat-label">Н — прогул</div>
+        </div>
+        <div class="att-stat att-stat-О">
+            <div class="att-stat-value">{{ attendance_stats['О'] }}</div>
+            <div class="att-stat-label">О — опоздал</div>
+        </div>
+        <div class="att-stat att-stat-П">
+            <div class="att-stat-value">{{ attendance_stats['П'] }}</div>
+            <div class="att-stat-label">П — уважительная</div>
+        </div>
+        <div class="att-stat att-stat-Б">
+            <div class="att-stat-value">{{ attendance_stats['Б'] }}</div>
+            <div class="att-stat-label">Б — болел</div>
+        </div>
+    </div>
+
+    {% if attendance_records %}
+        <h3 style="margin-top: 24px;">История отметок</h3>
+        <div class="attendance-history">
+            {% for att in attendance_records %}
+                <div class="attendance-item">
+                    <span class="att-mark att-mark-{{ att.mark }}">{{ att.mark }}</span>
+                    <span class="att-date">{{ att.date.strftime('%d.%m.%Y') }}</span>
+                    {% if att.comment %}
+                        <span class="att-comment">{{ att.comment }}</span>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="muted" style="margin-top: 16px;">Отметок посещаемости пока нет</p>
+    {% endif %}
+</div>
+{% endblock %}

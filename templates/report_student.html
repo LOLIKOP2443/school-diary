@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Итоги{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 {{ 'Мои итоги' if is_own else 'Итоги: ' + student.full_name }}</h1>
+    {% if not is_own %}
+        <a href="{{ url_for('report') }}" class="btn">← К общему отчёту</a>
+    {% endif %}
+</div>
+
+{% for q in quarters_data %}
+    <div class="card" style="margin-bottom: 20px;">
+        <h2>
+            {{ q.name }}
+            <span class="muted" style="font-weight: normal; font-size: 14px;">
+                ({{ q.start.strftime('%d.%m.%Y') }} — {{ q.end.strftime('%d.%m.%Y') }})
+            </span>
+        </h2>
+
+        {% if q.subjects %}
+            <table class="data-table" style="margin-top: 12px;">
+                <thead>
+                    <tr>
+                        <th>Предмет</th>
+                        <th>Оценки</th>
+                        <th>Средний балл</th>
+                        <th>Итоговая</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in q.subjects %}
+                        <tr>
+                            <td><strong>{{ s.subject.name }}</strong></td>
+                            <td>
+                                {% for g in s.grades %}
+                                    <span class="grade-pill grade-{{ g }}">{{ g }}</span>
+                                {% endfor %}
+                            </td>
+                            <td><strong>{{ s.average }}</strong></td>
+                            <td><span class="final-grade final-{{ s.final }}">{{ s.final }}</span></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="attendance-stats" style="margin-top: 20px;">
+                <div class="att-stat att-stat-Н">
+                    <div class="att-stat-value">{{ q.attendance['Н'] }}</div>
+                    <div class="att-stat-label">Н — прогул</div>
+                </div>
+                <div class="att-stat att-stat-О">
+                    <div class="att-stat-value">{{ q.attendance['О'] }}</div>
+                    <div class="att-stat-label">О — опоздал</div>
+                </div>
+                <div class="att-stat att-stat-П">
+                    <div class="att-stat-value">{{ q.attendance['П'] }}</div>
+                    <div class="att-stat-label">П — уважительная</div>
+                </div>
+                <div class="att-stat att-stat-Б">
+                    <div class="att-stat-value">{{ q.attendance['Б'] }}</div>
+                    <div class="att-stat-label">Б — болел</div>
+                </div>
+            </div>
+        {% else %}
+            <p class="muted">За эту четверть оценок нет</p>
+        {% endif %}
+    </div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Дневник — {{ student.full_name }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Times New Roman', Georgia, serif;
+            background: #f0f2f5;
+            color: #1a1a1a;
+            padding: 20px;
+            font-size: 14px;
+        }
+        .toolbar {
+            max-width: 900px;
+            margin: 0 auto 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            align-items: center;
+        }
+        .toolbar a, .toolbar button, .toolbar select {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-family: -apple-system, sans-serif;
+        }
+        .btn-print {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-back {
+            background: #f3f4f6;
+            color: #1a1a1a;
+        }
+        .toolbar select {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            cursor: pointer;
+        }
+        .toolbar label {
+            font-size: 13px;
+            color: #6b7280;
+            font-family: -apple-system, sans-serif;
+        }
+        .diary {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 8px;
+        }
+        .diary-header {
+            text-align: center;
+            border-bottom: 3px double #1a1a1a;
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+        .diary-header h1 {
+            font-size: 26px;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .diary-header .subtitle {
+            font-size: 14px;
+            color: #555;
+        }
+        .student-block {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 15px;
+        }
+        .student-block .field { display: flex; gap: 8px; }
+        .student-block .label { color: #555; }
+        .student-block .value {
+            font-weight: 700;
+            border-bottom: 1px solid #999;
+            padding: 0 8px;
+            min-width: 180px;
+        }
+        .period-info {
+            text-align: center;
+            font-size: 14px;
+            color: #444;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+        }
+        .grades-table th {
+            background: #f5f5f5;
+            border: 1px solid #999;
+            padding: 8px 10px;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .grades-table td {
+            border: 1px solid #999;
+            padding: 8px 10px;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+        .grades-table td.subject-name { font-weight: 600; text-align: left; }
+        .grades-table td.grades-cell {
+            text-align: center;
+            letter-spacing: 3px;
+            font-size: 15px;
+        }
+        .grades-table td.avg-cell {
+            text-align: center;
+            font-weight: 700;
+            background: #fafafa;
+        }
+        .grades-table td.final-cell {
+            text-align: center;
+            font-weight: 700;
+            font-size: 17px;
+            background: #fafafa;
+        }
+        .attendance-block { margin-top: 24px; }
+        .attendance-block h3 {
+            font-size: 15px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #999;
+            padding-bottom: 6px;
+        }
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .attendance-table th,
+        .attendance-table td {
+            border: 1px solid #999;
+            padding: 6px 10px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .attendance-table th { background: #f5f5f5; font-weight: 700; }
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            gap: 40px;
+        }
+        .signature-block { flex: 1; font-size: 13px; }
+        .signature-line {
+            border-bottom: 1px solid #1a1a1a;
+            height: 30px;
+            margin-bottom: 4px;
+        }
+        .signature-label { font-size: 11px; color: #555; }
+        .diary-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1px solid #ccc;
+            font-size: 11px;
+            color: #888;
+        }
+        @media print {
+            body { background: white; padding: 0; font-size: 12px; }
+            .toolbar { display: none; }
+            .diary {
+                box-shadow: none;
+                border-radius: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+            .diary-header h1 { font-size: 22px; }
+            .signatures { margin-top: 40px; }
+            @page { margin: 1.5cm; size: A4; }
+        }
+        @media (max-width: 700px) {
+            .diary { padding: 20px; }
+            .diary-header h1 { font-size: 20px; }
+            .student-block { flex-direction: column; gap: 10px; }
+            .signatures { flex-direction: column; gap: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <button class="btn-print" onclick="window.print()">🖨️ Распечатать / Сохранить в PDF</button>
+    <a href="{{ url_for('student_diary') }}" class="btn-back">← В дневник</a>
+
+    {% if not full %}
+        <label for="quarter-select">Четверть:</label>
+        <select id="quarter-select" onchange="changeQuarter(this.value)">
+            {% for q_num, q_data in quarters.items() %}
+                <option value="{{ q_num }}" {% if q_num == selected_quarter %}selected{% endif %}>
+                    {{ q_data.name }}
+                </option>
+            {% endfor %}
+        </select>
+    {% endif %}
+
+    <a href="{{ url_for('print_diary_full') }}" class="btn-back" target="_blank">
+        📋 Весь дневник за год
+    </a>
+</div>
+
+<div class="diary">
+    <div class="diary-header">
+        <h1>Дневник учащегося</h1>
+        <div class="subtitle">Муниципальное образовательное учреждение</div>
+    </div>
+
+    <div class="student-block">
+        <div class="field">
+            <span class="label">ФИО:</span>
+            <span class="value">{{ student.full_name }}</span>
+        </div>
+        <div class="field">
+            <span class="label">Класс:</span>
+            <span class="value">{{ student.class_name }}</span>
+        </div>
+    </div>
+
+    <div class="period-info">
+        {% if full %}
+            Полный дневник за {{ selected_year }}/{{ selected_year + 1 }} учебный год
+        {% else %}
+            {{ quarters[selected_quarter].name }} ({{ start_date.strftime('%d.%m.%Y') }} — {{ end_date.strftime('%d.%m.%Y') }})
+        {% endif %}
+    </div>
+
+    {% if subjects_data %}
+        <table class="grades-table">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Предмет</th>
+                    <th style="width: 45%;">Оценки</th>
+                    <th style="width: 15%;">Средний балл</th>
+                    <th style="width: 15%;">Итоговая</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in subjects_data %}
+                    <tr>
+                        <td class="subject-name">{{ s.subject.name }}</td>
+                        <td class="grades-cell">
+                            {% for g in s.grades %}{{ g.value }}{% if not loop.last %} {% endif %}{% endfor %}
+                        </td>
+                        <td class="avg-cell">{{ s.average }}</td>
+                        <td class="final-cell">{{ s.final }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="attendance-block">
+            <h3>Посещаемость</h3>
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>Н (прогул)</th>
+                        <th>О (опоздал)</th>
+                        <th>П (уважительная)</th>
+                        <th>Б (болел)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>{{ att_stats['Н'] }}</td>
+                        <td>{{ att_stats['О'] }}</td>
+                        <td>{{ att_stats['П'] }}</td>
+                        <td>{{ att_stats['Б'] }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="signatures">
+            <div class="signature-block">
+                <div class="signature-line"></div>
+                <div class="signature-label">Подпись классного руководителя</div>
+            </div>
+            <div class="signature-block">
+                <div class="signature-line"></div>
+                <div class="signature-label">Подпись родителей</div>
+            </div>
+        </div>
+    {% else %}
+        <p style="text-align: center; padding: 40px 0; color: #888; font-style: italic;">
+            За выбранный период оценок нет
+        </p>
+    {% endif %}
+
+    <div class="diary-footer">
+        Документ сформирован автоматически • {{ selected_year }}/{{ selected_year + 1 }} уч. год
+    </div>
+</div>
+
+<script>
+function changeQuarter(q) {
+    window.location.href = '/print-diary?quarter=' + q;
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Редактировать ученика' if student else 'Добавить ученика' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ '✏️ Редактировать ученика' if student else '➕ Добавить ученика' }}</h1>
+    <a href="{{ url_for('admin_panel') }}" class="btn">← Назад</a>
+</div>
+
+<div class="card form-card">
+    <form method="POST">
+        <div class="form-group">
+            <label for="full_name">ФИО ученика</label>
+            <input type="text" id="full_name" name="full_name" required
+                   value="{{ student.full_name if student else '' }}"
+                   placeholder="Например: Иванов Пётр Сергеевич">
+        </div>
+
+        <div class="form-group">
+            <label for="class_name">Класс</label>
+            <input type="text" id="class_name" name="class_name" required
+                   value="{{ student.class_name if student else '' }}"
+                   placeholder="Например: 5А"
+                   list="class-list">
+            <datalist id="class-list">
+                {% for c in classes %}
+                    <option value="{{ c }}">
+                {% endfor %}
+            </datalist>
+            <small class="form-hint">Введите класс (например: 5А, 7Б, 11В). Если такого класса ещё нет — он создастся автоматически.</small>
+        </div>
+
+        {% if not student %}
+        <div class="form-group">
+            <label for="username">Логин</label>
+            <input type="text" id="username" name="username" required
+                   placeholder="Например: ivanov_p"
+                   pattern="[a-zA-Z0-9_]+"
+                   title="Только латинские буквы, цифры и _">
+            <small class="form-hint">Только латиница, цифры и подчёркивание. Например: <code>ivanov_p</code></small>
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label>Логин</label>
+            <input type="text" value="{{ student.username }}" disabled>
+            <small class="form-hint">Логин нельзя изменить после создания</small>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label for="password">
+                {% if student %}Новый пароль (оставьте пустым, чтобы не менять){% else %}Пароль{% endif %}
+            </label>
+            <input type="text" id="password" name="password"
+                   {% if not student %}required{% endif %}
+                   placeholder="Например: school2025">
+            <small class="form-hint">Пароль можно посмотреть. Рекомендуется простой — чтобы ученик мог запомнить.</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+            {{ '💾 Сохранить' if student else '➕ Добавить ученика' }}
+        </button>
+    </form>
+</div>
+{% endblock %}
